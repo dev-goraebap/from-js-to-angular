@@ -139,3 +139,69 @@ containerElement 요소는 단순히 클릭 이벤트가 일어 났을 때 이�
 <figure><img src=".gitbook/assets/제목 없는 동영상 - Clipchamp로 제작.gif" alt=""><figcaption></figcaption></figure>
 
 ### ES6 의 모듈 시스템 활용
+
+클래스로 코드를 리팩토링 하기 전에 es6에서부터 사용할 수 있는 모듈 시스템을 통해 코드를 조금 분리해보도록 하겠습니다. HTML 문서의 script 요소에 type을 module 방식으로 변경해줍니다.
+
+```html
+<script defer type="module" src="./app.js"></script>
+```
+
+모듈 시스템을 사용하게 되면 별도의 다른 스크립트 태그를 불러올 필요없이 app.js에서 다른 자바스크립트 파일들을 import 하여 사용할 수 있게 됩니다.&#x20;
+
+먼저 html 문서에서는 직접 연결되지 않는 todo.js 파일부터 보도록 할게요.
+
+```javascript
+let todoList = [];
+
+// 당장은 투머치한 코드지만 이후의 캡슐화를 설명하기 위해
+// 만들어 두었습니다 😅
+export const getTodoList = () => todoList.map(todo => ({ ...todo }));
+
+export const addTodo = (content) => {
+    if (!content) {
+        window.alert('내용을 입력해 주세요.');
+        return;
+    }
+
+    const randomId = new Date().getTime().toString();
+
+    todoList.push({
+        id: randomId,
+        content,
+        finished: false,
+    });
+};
+
+export const checkTodo = (id) => {
+    todoList = todoList.map((todo) => {
+        if (todo.id !== id) {
+            return todo;
+        }
+        return { ...todo, finished: !todo.finished };
+    });
+}
+
+export const removeTodo = (id) => {
+    todoList = todoList.filter((todo) => todo.id !== id);
+} 
+```
+
+기존의 코드와 다른점은 getTodoList 함수가 하나 더 생긴 것 뿐입니다. getTodoList는 불필요하게 배열을 한번 더 순회하며 결국 같은 값이 담긴 배열을 반환하지만, 한가지 차이점은 기존의 todoList과는 다른 새로운 배열을 반환한다는 것 입니다.&#x20;
+
+그리고 또 다른 포인트는 todoList 라는 저장 공간은 외부로 export 하지 않고 함수들만 외부에서 사용할 수 있게 하고 있습니다. 이는 할일이라는 데이터들을 외부에서 혀용되지 않은 방식으로 조작하지 않게 하고 노출된 인터페이스(여기서는 함수) 들을 통해서만 원본 데이터의 값을 조작하도록 하기 위한 일종의 안전장치라고 생각해주시면 좋을 것 같아요. getTodoList 함수 역시 todoList 배열을 그대로 반환하지 않고 새로 만들어서 반환하기 때문에 사용하는 곳에서 이 배열의 값을 조작하더라도 원본의 값은 문제가 없게 하기 위함 이였습니다.
+
+다음은 app.js 의 코드 입니다.
+
+```javascript
+import * as todoService from './todo.js';
+
+... todoService를 이용하는 것 말고는 다를게 없음
+```
+
+<mark style="background-color:yellow;">es6 module 시스템을 적용한 코드는</mark> [<mark style="background-color:yellow;">이곳</mark>](https://github.com/dev-goraebap/learn-angular-loosely/tree/02-function-with-module)<mark style="background-color:yellow;">에서 확인할 수 있어요.</mark>
+
+기존의 todoList를 조작하던 코드들을 todo.js 에서 import 해서 가져오는 모습입니다. todo.js 의 모든 노출된 인터페이스들을 todoService라는 별칭으로 묶고 사용하는 것 말고는 다를게 없습니다.&#x20;
+
+사실 위와 같이 다른 파일의 기능을 불러와 사용하는 방식들은 많이 익숙하실거에요. 중요한점은 우리는 관심사에 따라서 파일들을 분해하고 조립하고 있다는 점이죠. 모듈 시스템과 함수를 사용하여 데이터와 로직을 함께 묶어 관리하는 것은 클래스의 캡슐화 개념과 매우 유사해 보일 수 있어요. 그러나 이러한 방법만으로는 클래스가 제공하는 모든 이점을 완전히 활용할 수 없습니다.
+
+### 클래스 방식으로 투두리스트 리팩토링
