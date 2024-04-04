@@ -1,16 +1,141 @@
 ---
-description: 앵귤러를 배울 때 변경이 일어날 수 있는 부분들과 변경되지 않는 핵심적인 기술들을 나누고 변화하지 않는 내용에 초점에 집중하도록 합니다.
-coverY: 0
+description: 클래스 사용이 생소한 개발자들을 위한 글입니다.. 객체지향 프로그래밍에 익숙하신 분들은 뒤로가기 버튼을 눌러주세요.
 ---
 
 # 클래스 기반의 코드 구조 맛보기
 
-### 객체지향 프로그래밍
+앵귤러는 타 프론트엔드 프레임워크(혹은 라이브러리) 와 다르게 class 기반의 문법을 사용하며 이 객체들이 상호작용하여 기능들을 완성하게됩니다. 객체지향 페러다임은 너무 방대하기 때문에 짧은 시간을 투자해서 많은 것을 알아가기는 어렵습니다. 그렇기 때문에 기존에 함수 기반으로 코드들을 작성하였다면 클래스를 사용했을 때는 어떻게 달라지는지, 어떤 장점과 단점이 있는지 기존 방식과 비교하는 시간을 짧게 가져보는 것이 좋을 것 같다고 생각했습니다.&#x20;
 
-앵귤러는 타 프론트엔드 프레임워크(혹은 라이브러리) 와 다르게 class 기반의 문법을 사용하며 이 객체들이 상호작용하여 기능들을 완성하게됩니다. 객체지향 페러다임은 너무 방대하기 때문에 짧은 시간을 투자해서 많은 것을 알아가기는 어렵습니다. 그렇기 때문에 기존에 함수 기반으로 코드들을 작성하였다면 클래스를 사용했을 때는 어떻게 달라지는지 어떤 장점, 단점이 있는지 기존 방식과 비교하는 시간을 짧게 가져보는 것이 좋을 것 같다고 생각했습니다.&#x20;
+### 맨땅에 실습하기
 
-같은 맥락으로 앵귤러에서 접하게 되는 의존성 주입(DI)이 무엇이고 우리가 이것을 구현했을 때 어떤 문제가 발생하고, 앵귤러가 이 부분을 왜 해결해주는지 등의 문제들도 간단하게 다룰 예정입니다. 이것은 앵귤러만의 기술이 아니고 객체지향 기반의 프레임워크들이 대부분 해결하는 문제들이기 때문에 Spring 이나 Nestjs 같은 백엔드 환경에도 적용이 가능합니다.
+간단하게 브라우저 환경에서 자바스크립트를 사용하여 투두리스트를 만들어보며 진행해보도록 하겠습니다. 먼저 함수 기반으로 기능들을 구현하고 점진적으로 수정해보도록 할게요.
 
+<mark style="background-color:yellow;">완성된 소스코드는</mark> [<mark style="background-color:yellow;">여기</mark>](https://github.com/dev-goraebap/learn-angular-loosely/tree/main/todo-sample)<mark style="background-color:yellow;">서 확인해 보시면 됩니다.</mark>
 
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script defer src="./index.js"></script>
+</head>
+<body>
+    <div>
+        <form id="todoForm">
+            <input id="contentInput" placeholder="할 일을 입력하세요" />
+            <button>생성</button>
+        </form>
+    </div>
 
-###
+    <ul id="todoContainer"></ul>
+</body>
+</html>
+```
+
+웹페이지를 통해 사용자 상호작용을 하기 위해 최소한의 구성을 이루었습니다. 어떻게 구현할까 고민하다가 변경되지 않는 입력 부분은 미리 태그들을 구성해  놓고 동적으로 리스트가 생성될 영역은 내용을 비워두었습니다. 나중에 자바스크립트를 통해 사용자 상호작용이 일어나면 동적으로 화면이 생성되게 할 생각입니다.
+
+<figure><img src=".gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
+다음으로 자바스크립트 코드를 보도록 할게요. html 문서에 연결해주었던 index.js 파일입니다.
+
+```javascript
+let todoList = [];
+
+const addTodo = (content) => {
+    if (!content) {
+        window.alert('내용을 입력해 주세요.');
+        return;
+    }
+
+    const randomId = new Date().getTime().toString();
+
+    todoList.push({
+        id: randomId,
+        content,
+        finished: false,
+    });
+};
+
+const checkTodo = (id) => {
+    todoList = todoList.map((todo) => {
+        if (todo.id !== id) {
+            return todo;
+        }
+        return { ...todo, finished: !todo.finished };
+    });
+}
+
+const removeTodo = (id) => {
+    todoList = todoList.filter((todo) => todo.id !== id);
+} 
+```
+
+할일이라는 데이터를 저장하기 위해 todoList 배열을 만들어주었습니다. 이후에 생성, 완료 또는 취소, 삭제 라는 행동들을 함수로 만들어주었죠.&#x20;
+
+함수들의 공통점은 todoList라는 배열의 값을 변화시킨다는 것 입니다. 이 부분을 이용해서 todoList의 값이 변화하는 시점마다 동적으로 화면을 변화시켜주면 될 것 같아요.
+
+작업을 하기 위해서는 먼저 html 문서에 작성된 상호작용이 필요한 요소들을 가져와서 이벤트를 감지하고 이벤트에 따라 해당 함수들을 호출하면 될 것 같아요.
+
+위에 작성된 코드의 하단에 바로 작성한 내용입니다.
+
+```javascript
+const formElement = document.querySelector('#todoForm');
+const inputElement = document.querySelector('#contentInput');
+const containerElement = document.querySelector('#todoContainer');
+
+formElement.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    addTodo(inputElement.value);
+    inputElement.value = '';
+
+    updateUI();
+});
+
+containerElement.addEventListener('click', (event) => {
+    let todoId;
+
+    switch (event.target.id) {
+        case 'checkTodo':
+            todoId = event.target.getAttribute('data-id');
+            checkTodo(todoId);
+            break;
+        case 'removeTodo':
+            todoId = event.target.getAttribute('data-id');
+            removeTodo(todoId);
+            break;
+        default:
+    }
+
+    updateUI(); // 모든 처리 후 UI 업데이트
+});
+
+const updateUI = () => {
+    containerElement.innerHTML = todoList.map((todo) => {
+        const contentTag = todo.finished ? 'del' : 'span';
+        return `
+        <li>
+            <input id="checkTodo" type="checkbox" ${todo.finished ? 'checked' : ''} data-id="${todo.id}" />
+            <${contentTag}>${todo.content}</${contentTag}>
+            <button id="removeTodo" data-id="${todo.id}">삭제</button>
+        </li>
+        `;
+    }).join('');
+}
+```
+
+상단의 formElement 는 버튼이 클릭되었을 때 submit 이벤트를 감지하고 실행됩니다. 페이지를 리랜더링 하는 submit 이벤트의 전파를 막고 상단에 작성해둔 할일 추가 기능을 연결하였습니다.&#x20;
+
+containerElement 요소는 단순히 클릭 이벤트가 일어 났을 때 이벤트 버블링을 이용하여 내부의 요소가 자신까지 전파될 때 특정 요소를 조건으로 찾아냅니다. 조건으로 찾아낸 요소에 따라 완료/취소 또는 삭제를 하는 행동 함수를 호출합니다.&#x20;
+
+그리고 두 이벤트 모두 작업이 끝날 때 updateUI 라는 함수를 호출하게 되는데 이 함수는 실행되는 시점에 todoList의 값을 조회하여 순회하며 containerElement 요소에 html 요소를 동적으로 그리게 됩니다.
+
+<mark style="color:green;">\*\*containerElement 내부의 요소들은 동적으로 생성되기 때문에 동적으로 생성되는 요소에 이벤트 함수를 연결하는 작업이 조금 지저분하다고 생각되어 이렇게 해결했는데, 더 좋은 방법을 알고 계시면 알려주시면 감사하겠습니다 😅</mark>
+
+위 작업이 끝나게 되면 다음과 일단 투두리스트의 기능은 허접하지만 잘 작동하는 것 같아요.
+
+<figure><img src=".gitbook/assets/제목 없는 동영상 - Clipchamp로 제작.gif" alt=""><figcaption></figcaption></figure>
+
+### ES6 의 모듈 시스템 활용
