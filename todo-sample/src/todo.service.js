@@ -1,4 +1,4 @@
-class TodoService {
+export class TodoService {
     
     #todoList = [];
 
@@ -34,5 +34,3 @@ class TodoService {
         this.#todoList = this.#todoList.filter((todo) => todo.id !== id);
     }
 }
-
-export default new TodoService();
