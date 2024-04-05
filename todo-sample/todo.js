@@ -1,35 +1,38 @@
-let todoList = [];
+class TodoService {
+    
+    #todoList = [];
 
-export const getTodoList = () => todoList.map(todo => ({ ...todo }));
-
-export const addTodo = (content) => {
-    if (!content) {
-        window.alert('내용을 입력해 주세요.');
-        return;
+    getTodoList() {
+        return [...this.#todoList];
     }
 
-    const randomId = new Date().getTime().toString();
-
-    todoList.push({
-        id: randomId,
-        content,
-        finished: false,
-    });
-};
-
-export const checkTodo = (id) => {
-    todoList = todoList.map((todo) => {
-        if (todo.id !== id) {
-            return todo;
+    addTodo(content) {
+        if (!content) {
+            window.alert('내용을 입력해 주세요.');
+            return;
         }
-        return { ...todo, finished: !todo.finished };
-    });
 
-    return todoList;
+        const randomId = new Date().getTime().toString();
+
+        this.#todoList.push({
+            id: randomId,
+            content,
+            finished: false,
+        });
+    };
+
+    checkTodo(id) {
+        this.#todoList = this.#todoList.map((todo) => {
+            if (todo.id !== id) {
+                return todo;
+            }
+            return { ...todo, finished: !todo.finished };
+        });
+    }
+
+    removeTodo(id) {
+        this.#todoList = this.#todoList.filter((todo) => todo.id !== id);
+    }
 }
 
-export const removeTodo = (id) => {
-    todoList = todoList.filter((todo) => todo.id !== id);
-
-    return todoList;
-} 
+export default new TodoService();

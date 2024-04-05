@@ -1,4 +1,4 @@
-import * as todoService from './todo.js';
+import todoService from './todo.js';
 
 const formElement = document.querySelector('#todoForm');
 const inputElement = document.querySelector('#contentInput');
