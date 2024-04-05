@@ -7,7 +7,7 @@ const containerElement = document.querySelector('#todoContainer');
 formElement.addEventListener('submit', (event) => {
     event.preventDefault();
 
-    addTodo(inputElement.value);
+    todoService.addTodo(inputElement.value);
     inputElement.value = '';
 
     updateUI();
