@@ -1,34 +1,43 @@
 // todolist logic
 
-let todoList = [];
+class TodoService {
 
-const addTodo = (content) => {
-    if (!content) {
-        window.alert('내용을 입력해 주세요.');
-        return;
+    #todoList = [];
+
+    getTodoList() {
+        return [...this.#todoList];
     }
 
-    const generateId = new Date().getTime().toString();
-
-    todoList.push({
-        id: generateId,
-        content,
-        finished: false,
-    });
-};
-
-const checkTodo = (id) => {
-    todoList = todoList.map((todo) => {
-        if (todo.id !== id) {
-            return todo;
+    addTodo(content) {
+        if (!content) {
+            window.alert('내용을 입력해 주세요.');
+            return;
         }
-        return { ...todo, finished: !todo.finished };
-    });
+    
+        const generateId = new Date().getTime().toString();
+    
+        this.#todoList.push({
+            id: generateId,
+            content,
+            finished: false,
+        });
+    }
+
+    checkTodo(id) {
+        this.#todoList = this.#todoList.map((todo) => {
+            if (todo.id !== id) {
+                return todo;
+            }
+            return { ...todo, finished: !todo.finished };
+        });
+    }
+
+    removeTodo(id) {
+        this.#todoList = this.#todoList.filter((todo) => todo.id !== id);
+    }
 }
 
-const removeTodo = (id) => {
-    todoList = todoList.filter((todo) => todo.id !== id);
-} 
+const todoService = new TodoService();
 
 // UI Event logic
 
@@ -39,7 +48,7 @@ const containerElement = document.querySelector('#todoContainer');
 formElement.addEventListener('submit', (event) => {
     event.preventDefault();
 
-    addTodo(inputElement.value);
+    todoService.addTodo(inputElement.value);
 
     inputElement.value = '';
 
@@ -52,10 +61,10 @@ containerElement.addEventListener('click', (event) => {
 
     switch (targetAction) {
         case 'checkTodo':
-            checkTodo(targetTodoId);
+            todoService.checkTodo(targetTodoId);
             break;
         case 'removeTodo':
-            removeTodo(targetTodoId);
+            todoService.removeTodo(targetTodoId);
             break;
         default:
     }
@@ -64,6 +73,7 @@ containerElement.addEventListener('click', (event) => {
 });
 
 const updateUI = () => {
+    const todoList = todoService.getTodoList();
     containerElement.innerHTML = todoList.map((todo) => {
         const contentTag = todo.finished ? 'del' : 'span';
         return `
