@@ -8,7 +8,7 @@
 * [01. 함수 사용](from-js-to-angular/01..md)
 * [02. 클래스 사용](from-js-to-angular/02..md)
 * [03. 클래스 사용+](from-js-to-angular/03.-+.md)
-* [03. 모듈 시스템 사용](from-js-to-angular/03..md)
+* [04. 모듈 시스템 사용](from-js-to-angular/04..md)
 
 ## 🍪 앵귤러에서 이것저것 해보기 <a href="#angular-skills" id="angular-skills"></a>
 
