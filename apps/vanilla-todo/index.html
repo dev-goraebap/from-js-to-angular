@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script defer type="module" src="./src/app.js"></script>
+    <link rel="components" href="./src/components/add-todo/add-todo.component.html"/>
+    <script defer type="module" src="./src/index.js"></script>
 </head>
 <body>
-    <div id="root"></div>
+    <add-todo hint="할일을 입력해 주세요." dd="hello">
+        <span slot="button">생성</span>
+    </add-todo>
 </body>
 </html>
