@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="components" href="./src/components/add-todo/add-todo.component.html"/>
-    <script defer type="module" src="./src/index.js"></script>
+    <title>Todo List Example</title>
+    <script type="module" src="./src/widgets/add-todo.component.js"></script>
+    <script type="module" src="./src/widgets/todo-list.component.js"></script>
 </head>
 <body>
-    <add-todo hint="할일을 입력해 주세요." dd="hello">
-        <span slot="button">생성</span>
-    </add-todo>
+
+    <todo-add></todo-add>
+    <todo-list></todo-list>
+
 </body>
 </html>
