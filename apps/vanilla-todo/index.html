@@ -6,6 +6,15 @@
     <script type="module" src="./src/my-custom-element.js"></script>
 </head>
 <body>
-    <my-custom-element></my-custom-element>
+    <my-custom-element attr1="hello" attr2="world"></my-custom-element>
+    
+    <script>
+        const customElement = document.querySelector('my-custom-element');
+        console.log(customElement);
+        setTimeout(() => {
+            // 10 초 뒤 삭제
+            customElement.remove();
+        }, 10000);
+    </script>
 </body>
 </html>
