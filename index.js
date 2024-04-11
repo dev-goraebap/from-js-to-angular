@@ -14,20 +14,17 @@ todoFormElement.addEventListener('submit', event => {
         return;
     }
 
-    addTodo(content);
-
-    renderTodoView();
+    const addEvent = new CustomEvent('ADD_TODO', {
+        detail: { content }
+    });
+    document.dispatchEvent(addEvent);
 
     event.target.reset();
 });
 
-
-todoViewElement.addEventListener('RENDER_TODO_VIEW', () => {
-    renderTodoView();
-});
-
 const renderTodoView = () => {
     todoViewElement.innerHTML = '';
+
     todoList.forEach(todo => {
         const todoItemElement = createTodoItem(todo);
         todoViewElement.appendChild(todoItemElement);
@@ -40,9 +37,10 @@ const createTodoItem = (todo) => {
     checkBoxElement.type = 'checkbox';
     checkBoxElement.checked = todo.completed;
     checkBoxElement.addEventListener('click', () => {
-        checkTodo(todo.id);
-        const event = new CustomEvent('RENDER_TODO_VIEW');
-        todoViewElement.dispatchEvent(event);
+        const checkEvent = new CustomEvent('CHECK_TODO', {
+            detail: { id: todo.id }
+        });
+        document.dispatchEvent(checkEvent);
     });
 
     const contentElement = document.createElement(todo.completed ? 'del' : 'span');
@@ -51,9 +49,10 @@ const createTodoItem = (todo) => {
     const removeButtonElement = document.createElement('button');
     removeButtonElement.innerText = '삭제';
     removeButtonElement.addEventListener('click', () => {
-        removeTodo(todo.id);
-        const event = new CustomEvent('RENDER_TODO_VIEW');
-        todoViewElement.dispatchEvent(event);
+        const removeEvent = new CustomEvent('REMOVE_TODO', {
+            detail: { id: todo.id }
+        });
+        document.dispatchEvent(removeEvent);
     });
 
     const todoItemElement = document.createElement('li');
@@ -64,13 +63,32 @@ const createTodoItem = (todo) => {
     return todoItemElement;
 }
 
+document.addEventListener('ADD_TODO', event => {
+    const content = event.detail.content;
+    addTodo(content);
+    renderTodoView();
+});
+
+document.addEventListener('CHECK_TODO', event => {
+    const todoId = event.detail.id;
+    checkTodo(todoId);
+    renderTodoView();
+});
+
+document.addEventListener('REMOVE_TODO', event => {
+    const todoId = event.detail.id;
+    removeTodo(todoId);
+    renderTodoView();
+});
+
 // =================== TODO DOMAIN CODE  =================== //
 
+let generateId = 1;
 let todoList = [];
 
 const addTodo = (content) => {
     todoList.push({
-        id: new Date().getTime().toString(),
+        id: generateId++,
         content,
         completed: false
     });
