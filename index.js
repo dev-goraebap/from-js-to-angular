@@ -1,3 +1,40 @@
+// =================== TODO DOMAIN CODE  =================== //
+
+class TodoService {
+    #generateId = 1;
+    #todoList = [];
+
+    get todoList() {
+        return [...this.#todoList];
+    }
+
+    addTodo(content) {
+        this.#todoList.push({
+            id: this.#generateId++,
+            content,
+            completed: false
+        });
+    }
+    
+    checkTodo(id) {
+        this.#todoList = this.#todoList.map(todo => {
+            if (todo.id !== id) {
+                return todo;
+            }
+            return {
+                ...todo,
+                completed: !todo.completed
+            };
+        });
+    }
+    
+    removeTodo(id) {
+        this.#todoList = this.#todoList.filter(todo => todo.id !== id);
+    }
+}
+
+const todoService = new TodoService();
+
 // =================== DOM CONTROL CODE  =================== //
 
 const todoFormElement = document.querySelector('#todoForm');
@@ -25,7 +62,7 @@ todoFormElement.addEventListener('submit', event => {
 const renderTodoView = () => {
     todoViewElement.innerHTML = '';
 
-    todoList.forEach(todo => {
+    todoService.todoList.forEach(todo => {
         const todoItemElement = createTodoItem(todo);
         todoViewElement.appendChild(todoItemElement);
     });
@@ -65,47 +102,18 @@ const createTodoItem = (todo) => {
 
 document.addEventListener('ADD_TODO', event => {
     const content = event.detail.content;
-    addTodo(content);
+    todoService.addTodo(content);
     renderTodoView();
 });
 
 document.addEventListener('CHECK_TODO', event => {
     const todoId = event.detail.id;
-    checkTodo(todoId);
+    todoService.checkTodo(todoId);
     renderTodoView();
 });
 
 document.addEventListener('REMOVE_TODO', event => {
     const todoId = event.detail.id;
-    removeTodo(todoId);
+    todoService.removeTodo(todoId);
     renderTodoView();
 });
-
-// =================== TODO DOMAIN CODE  =================== //
-
-let generateId = 1;
-let todoList = [];
-
-const addTodo = (content) => {
-    todoList.push({
-        id: generateId++,
-        content,
-        completed: false
-    });
-}
-
-const checkTodo = (id) => {
-    todoList = todoList.map(todo => {
-        if (todo.id !== id) {
-            return todo;
-        }
-        return {
-            ...todo,
-            completed: !todo.completed
-        };
-    });
-}
-
-const removeTodo = (id) => {
-    todoList = todoList.filter(todo => todo.id !== id);
-}
