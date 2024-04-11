@@ -1,3 +1,5 @@
+// =================== DOM CONTROL CODE  =================== //
+
 const todoFormElement = document.querySelector('#todoForm');
 const todoViewElement = document.querySelector('#todoView');
 
@@ -12,30 +14,46 @@ todoFormElement.addEventListener('submit', event => {
         return;
     }
 
-    const todoItemElement = createTodoItem(content);
-    todoViewElement.appendChild(todoItemElement);
+    addTodo(content);
+
+    renderTodoView();
 
     event.target.reset();
 });
 
-const createTodoItem = (content) => {
+
+todoViewElement.addEventListener('RENDER_TODO_VIEW', () => {
+    renderTodoView();
+});
+
+const renderTodoView = () => {
+    todoViewElement.innerHTML = '';
+    todoList.forEach(todo => {
+        const todoItemElement = createTodoItem(todo);
+        todoViewElement.appendChild(todoItemElement);
+    });
+}
+
+const createTodoItem = (todo) => {
 
     const checkBoxElement = document.createElement('input');
     checkBoxElement.type = 'checkbox';
-    checkBoxElement.addEventListener('click', event => {
-        const todoItemElement = event.target.parentNode;
-        const contentElement = todoItemElement.querySelector('span');
-        contentElement.classList.toggle('checked');
+    checkBoxElement.checked = todo.completed;
+    checkBoxElement.addEventListener('click', () => {
+        checkTodo(todo.id);
+        const event = new CustomEvent('RENDER_TODO_VIEW');
+        todoViewElement.dispatchEvent(event);
     });
 
-    const contentElement = document.createElement('span');
-    contentElement.innerText = content;
+    const contentElement = document.createElement(todo.completed ? 'del' : 'span');
+    contentElement.innerText = todo.content;
 
     const removeButtonElement = document.createElement('button');
     removeButtonElement.innerText = '삭제';
-    removeButtonElement.addEventListener('click', event => {
-        const todoItemElement = event.target.parentNode;
-        todoItemElement.remove();
+    removeButtonElement.addEventListener('click', () => {
+        removeTodo(todo.id);
+        const event = new CustomEvent('RENDER_TODO_VIEW');
+        todoViewElement.dispatchEvent(event);
     });
 
     const todoItemElement = document.createElement('li');
@@ -44,4 +62,32 @@ const createTodoItem = (content) => {
     todoItemElement.appendChild(removeButtonElement);
 
     return todoItemElement;
+}
+
+// =================== TODO DOMAIN CODE  =================== //
+
+let todoList = [];
+
+const addTodo = (content) => {
+    todoList.push({
+        id: new Date().getTime().toString(),
+        content,
+        completed: false
+    });
+}
+
+const checkTodo = (id) => {
+    todoList = todoList.map(todo => {
+        if (todo.id !== id) {
+            return todo;
+        }
+        return {
+            ...todo,
+            completed: !todo.completed
+        };
+    });
+}
+
+const removeTodo = (id) => {
+    todoList = todoList.filter(todo => todo.id !== id);
 }
