@@ -15,7 +15,12 @@ todoFormElement.addEventListener('submit', event => {
     event.preventDefault();
 
     const formData = new FormData(event.target);
-    const content = formData.get('content');
+    const content = formData.get('content').trim();
+
+    if (!content) {
+        window.alert('내용을 입력해 주세요.');
+        return;
+    }
 
     const todoItemElement = createTodoItem(content);
     todoViewElement.appendChild(todoItemElement);
@@ -58,21 +63,26 @@ todoViewElement.addEventListener('click', event => {
  */
 const createTodoItem = (content) => {
 
+    // 채크박스 요소 생성 및 data-action 속성 추가 
     const checkBoxElement = document.createElement('input');
     checkBoxElement.type = 'checkbox';
     checkBoxElement.dataset.action = 'checkTodo';
 
+    // 컨텐츠 요소 생성 및 내용 추가
     const contentElement = document.createElement('span');
     contentElement.innerText = content;
 
+    // 삭제 버튼 요소 생성 및 data-action 속성 추가
     const removeButtonElement = document.createElement('button');
     removeButtonElement.innerText = '삭제';
     removeButtonElement.dataset.action = 'removeTodo';
 
+    // todoItem 요소 생성 및 자식 요소를 채크박스, 컨텐츠, 삭제버튼 순서대로 추가
     const todoItemElement = document.createElement('li');
     todoItemElement.appendChild(checkBoxElement);
     todoItemElement.appendChild(contentElement);
     todoItemElement.appendChild(removeButtonElement);
 
+    // todoItem 요소 반환
     return todoItemElement;
 }
