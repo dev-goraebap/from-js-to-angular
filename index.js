@@ -1,5 +1,3 @@
-// =================== TODO DOMAIN CODE  =================== //
-
 class TodoService {
     #generateId = 1;
     #todoList = [];
@@ -15,7 +13,7 @@ class TodoService {
             completed: false
         });
     }
-    
+
     checkTodo(id) {
         this.#todoList = this.#todoList.map(todo => {
             if (todo.id !== id) {
@@ -27,93 +25,125 @@ class TodoService {
             };
         });
     }
-    
+
     removeTodo(id) {
         this.#todoList = this.#todoList.filter(todo => todo.id !== id);
     }
 }
 
-const todoService = new TodoService();
+class AddTodoComponent {
+    constructor() {
+        this.todoFormElement = document.createElement('form');
 
-// =================== DOM CONTROL CODE  =================== //
+        const inputElement = document.createElement('input');
+        inputElement.name = 'content';
+        inputElement.placeholder = '내용을 입력해 주세요.';
 
-const todoFormElement = document.querySelector('#todoForm');
-const todoViewElement = document.querySelector('#todoView');
+        const buttonElement = document.createElement('button');
+        buttonElement.textContent = '추가';
 
-todoFormElement.addEventListener('submit', event => {
-    event.preventDefault();
+        this.todoFormElement.appendChild(inputElement);
+        this.todoFormElement.appendChild(buttonElement);
 
-    const formData = new FormData(event.target);
-    const content = formData.get('content').trim();
+        this.todoFormElement.addEventListener('submit', (event) => this.onSubmit(event));
 
-    if (!content) {
-        window.alert('내용을 입력해 주세요.');
-        return;
+        return this.todoFormElement;
     }
 
-    const addEvent = new CustomEvent('ADD_TODO', {
-        detail: { content }
-    });
-    document.dispatchEvent(addEvent);
+    onSubmit(event) {
+        event.preventDefault();
 
-    event.target.reset();
-});
+        const formData = new FormData(event.target);
+        const content = formData.get('content').trim();
 
-const renderTodoView = () => {
-    todoViewElement.innerHTML = '';
+        if (!content) {
+            window.alert('내용을 입력해 주세요.');
+            return;
+        }
 
-    todoService.todoList.forEach(todo => {
-        const todoItemElement = createTodoItem(todo);
-        todoViewElement.appendChild(todoItemElement);
-    });
+        const addEvent = new CustomEvent('ADD_TODO', {
+            detail: { content }
+        });
+        document.dispatchEvent(addEvent);
+
+        event.target.reset();
+    }
 }
 
-const createTodoItem = (todo) => {
+class TodoViewComponent {
 
-    const checkBoxElement = document.createElement('input');
-    checkBoxElement.type = 'checkbox';
-    checkBoxElement.checked = todo.completed;
-    checkBoxElement.addEventListener('click', () => {
-        const checkEvent = new CustomEvent('CHECK_TODO', {
-            detail: { id: todo.id }
+    constructor(todoService) {
+        this.todoViewElement = document.createElement('ul');
+        this.todoService = todoService;
+
+        document.addEventListener('ADD_TODO', event => {
+            const content = event.detail.content;
+            this.todoService.addTodo(content);
+            this.renderTodoView();
         });
-        document.dispatchEvent(checkEvent);
-    });
 
-    const contentElement = document.createElement(todo.completed ? 'del' : 'span');
-    contentElement.innerText = todo.content;
-
-    const removeButtonElement = document.createElement('button');
-    removeButtonElement.innerText = '삭제';
-    removeButtonElement.addEventListener('click', () => {
-        const removeEvent = new CustomEvent('REMOVE_TODO', {
-            detail: { id: todo.id }
+        document.addEventListener('CHECK_TODO', event => {
+            const todoId = event.detail.id;
+            this.todoService.checkTodo(todoId);
+            this.renderTodoView();
         });
-        document.dispatchEvent(removeEvent);
-    });
 
-    const todoItemElement = document.createElement('li');
-    todoItemElement.appendChild(checkBoxElement);
-    todoItemElement.appendChild(contentElement);
-    todoItemElement.appendChild(removeButtonElement);
+        document.addEventListener('REMOVE_TODO', event => {
+            const todoId = event.detail.id;
+            this.todoService.removeTodo(todoId);
+            this.renderTodoView();
+        });
 
-    return todoItemElement;
+        return this.todoViewElement;
+    }
+
+    renderTodoView() {
+        this.todoViewElement.innerHTML = '';
+
+        this.todoService.todoList.forEach(todo => {
+            const todoItemElement = new TodoItemComponent(todo);
+            this.todoViewElement.appendChild(todoItemElement);
+        });
+    }
 }
 
-document.addEventListener('ADD_TODO', event => {
-    const content = event.detail.content;
-    todoService.addTodo(content);
-    renderTodoView();
-});
+class TodoItemComponent {
 
-document.addEventListener('CHECK_TODO', event => {
-    const todoId = event.detail.id;
-    todoService.checkTodo(todoId);
-    renderTodoView();
-});
+    constructor(todo) {
+        const checkBoxElement = document.createElement('input');
+        checkBoxElement.type = 'checkbox';
+        checkBoxElement.checked = todo.completed;
+        checkBoxElement.addEventListener('click', () => {
+            const checkEvent = new CustomEvent('CHECK_TODO', {
+                detail: { id: todo.id }
+            });
+            document.dispatchEvent(checkEvent);
+        });
 
-document.addEventListener('REMOVE_TODO', event => {
-    const todoId = event.detail.id;
-    todoService.removeTodo(todoId);
-    renderTodoView();
-});
+        const contentElement = document.createElement(todo.completed ? 'del' : 'span');
+        contentElement.innerText = todo.content;
+
+        const removeButtonElement = document.createElement('button');
+        removeButtonElement.innerText = '삭제';
+        removeButtonElement.addEventListener('click', () => {
+            const removeEvent = new CustomEvent('REMOVE_TODO', {
+                detail: { id: todo.id }
+            });
+            document.dispatchEvent(removeEvent);
+        });
+
+        const todoItemElement = document.createElement('li');
+        todoItemElement.appendChild(checkBoxElement);
+        todoItemElement.appendChild(contentElement);
+        todoItemElement.appendChild(removeButtonElement);
+
+        return todoItemElement;
+    }
+}
+
+const todoService = new TodoService();
+const addTodoComponent = new AddTodoComponent();
+const todoViewComponent = new TodoViewComponent(todoService);
+document.body.appendChild(addTodoComponent);
+document.body.appendChild(todoViewComponent);
+
