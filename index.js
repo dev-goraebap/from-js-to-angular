@@ -31,38 +31,38 @@ class TodoService {
     }
 }
 
-class AddTodoComponent {
+const todoService = new TodoService();
+
+class AddTodoComponent extends HTMLElement {
+
     constructor() {
-        this.todoFormElement = document.createElement('form');
+        super();
 
-        const inputElement = document.createElement('input');
-        inputElement.name = 'content';
-        inputElement.placeholder = '내용을 입력해 주세요.';
+        const form = document.createElement('form');
+        form.onsubmit = (event) => this.#onSubmit(event);
 
-        const buttonElement = document.createElement('button');
-        buttonElement.textContent = '추가';
+        const input = document.createElement('input');
+        input.name = 'content';
+        input.placeholder = '할일을 입력해 주세요';
 
-        this.todoFormElement.appendChild(inputElement);
-        this.todoFormElement.appendChild(buttonElement);
+        const button = document.createElement('button');
+        button.textContent = '생성';
 
-        this.todoFormElement.addEventListener('submit', (event) => this.onSubmit(event));
+        form.appendChild(input);
+        form.appendChild(button);
 
-        return this.todoFormElement;
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.appendChild(form);
     }
 
-    onSubmit(event) {
+    #onSubmit(event) {
         event.preventDefault();
 
         const formData = new FormData(event.target);
         const content = formData.get('content').trim();
 
-        if (!content) {
-            window.alert('내용을 입력해 주세요.');
-            return;
-        }
-
         const addEvent = new CustomEvent('ADD_TODO', {
-            detail: { content }
+            detail: content
         });
         document.dispatchEvent(addEvent);
 
@@ -70,80 +70,99 @@ class AddTodoComponent {
     }
 }
 
-class TodoViewComponent {
+customElements.define('add-todo', AddTodoComponent);
 
-    constructor(todoService) {
-        this.todoViewElement = document.createElement('ul');
-        this.todoService = todoService;
+class TodoViewComponent extends HTMLElement {
 
-        document.addEventListener('ADD_TODO', event => {
-            const content = event.detail.content;
-            this.todoService.addTodo(content);
-            this.renderTodoView();
+    #todoService;
+
+    constructor() {
+        super();
+
+        // 외부에 생성된 todoService 인스턴스에 접근
+        this.#todoService = todoService;
+
+        const ul = document.createElement('ul');
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.appendChild(ul);
+
+        document.addEventListener('ADD_TODO', (event) => {
+            const content = event.detail;
+            this.#todoService.addTodo(content);
+            this.#render();
         });
 
-        document.addEventListener('CHECK_TODO', event => {
-            const todoId = event.detail.id;
-            this.todoService.checkTodo(todoId);
-            this.renderTodoView();
+        document.addEventListener('CHECK_TODO', (event) => {
+            const todoId = event.detail;
+            this.#todoService.checkTodo(todoId);
+            this.#render();
         });
-
-        document.addEventListener('REMOVE_TODO', event => {
-            const todoId = event.detail.id;
-            this.todoService.removeTodo(todoId);
-            this.renderTodoView();
+        
+        document.addEventListener('REMOVE_TODO', (event) => {
+            const todoId = event.detail;
+            this.#todoService.removeTodo(todoId);
+            this.#render();
         });
-
-        return this.todoViewElement;
     }
 
-    renderTodoView() {
-        this.todoViewElement.innerHTML = '';
+    #render() {
+        this.shadowRoot.innerHTML = '';
 
-        this.todoService.todoList.forEach(todo => {
-            const todoItemElement = new TodoItemComponent(todo);
-            this.todoViewElement.appendChild(todoItemElement);
+        this.#todoService.todoList.forEach(todo => {
+            const TodoItemConstructor = customElements.get('todo-item');
+            const todoItemComponent = new TodoItemConstructor(todo);
+            this.shadowRoot.appendChild(todoItemComponent);
         });
     }
 }
 
-class TodoItemComponent {
+customElements.define('todo-view', TodoViewComponent);
 
+class TodoItemComponent extends HTMLElement {
     constructor(todo) {
-        const checkBoxElement = document.createElement('input');
-        checkBoxElement.type = 'checkbox';
-        checkBoxElement.checked = todo.completed;
-        checkBoxElement.addEventListener('click', () => {
-            const checkEvent = new CustomEvent('CHECK_TODO', {
-                detail: { id: todo.id }
-            });
-            document.dispatchEvent(checkEvent);
+        super();
+
+        const li = document.createElement('li');
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = todo.completed;
+        input.onclick = () => this.#onCheck(todo.id);
+
+        const content = document.createElement(todo.completed ? 'del' : 'span');
+        content.textContent = todo.content;
+
+        const button = document.createElement('button');
+        button.textContent = '삭제';
+        button.onclick = () => this.#onRemove(todo.id);
+
+        li.appendChild(input);
+        li.appendChild(content);
+        li.appendChild(button);
+
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.appendChild(li);
+    }
+
+    #onCheck(id) {
+        const event = new CustomEvent('CHECK_TODO', {
+            detail: id
         });
+        document.dispatchEvent(event);
+    }
 
-        const contentElement = document.createElement(todo.completed ? 'del' : 'span');
-        contentElement.innerText = todo.content;
-
-        const removeButtonElement = document.createElement('button');
-        removeButtonElement.innerText = '삭제';
-        removeButtonElement.addEventListener('click', () => {
-            const removeEvent = new CustomEvent('REMOVE_TODO', {
-                detail: { id: todo.id }
-            });
-            document.dispatchEvent(removeEvent);
+    #onRemove(id) {
+        const event = new CustomEvent('REMOVE_TODO', {
+            detail: id
         });
-
-        const todoItemElement = document.createElement('li');
-        todoItemElement.appendChild(checkBoxElement);
-        todoItemElement.appendChild(contentElement);
-        todoItemElement.appendChild(removeButtonElement);
-
-        return todoItemElement;
+        document.dispatchEvent(event);
     }
 }
 
-const todoService = new TodoService();
-const addTodoComponent = new AddTodoComponent();
-const todoViewComponent = new TodoViewComponent(todoService);
+customElements.define('todo-item', TodoItemComponent);
+
+const addTodoComponent = document.createElement('add-todo');
+const todoViewComponent = document.createElement('todo-view');
+
 document.body.appendChild(addTodoComponent);
 document.body.appendChild(todoViewComponent);
-
