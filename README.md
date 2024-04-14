@@ -1,4 +1,4 @@
-## 자바스크립트부터 앵귤러까지
+## 웹 컴포넌트 기반의 투두 웹앱 만들기
 
 0. [소개](https://dev-goraebap.gitbook.io/docs.goraebap/from-js-to-angular/intro)
 1. [DOM 기반의 투두리스트 만들기](https://dev-goraebap.gitbook.io/docs.goraebap/from-js-to-angular/make-based-element)
